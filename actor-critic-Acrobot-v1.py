@@ -4,7 +4,7 @@ import tensorflow as tf
 import summary_util
 
 env = gym.make('Acrobot-v1')
-env._max_episode_steps = None
+# env._max_episode_steps = None
 
 np.random.seed(1)
 
@@ -12,7 +12,7 @@ np.random.seed(1)
 V_NET_LAYER_SIZE = 20
 POLICY_NET_LAYER_SIZE = 20
 
-LOGS_PATH = './logs/actor-critic'
+LOGS_PATH = './logs/actor-critic/Acrobot-v1'
 
 # Define hyper parameters
 state_size = 6
@@ -21,11 +21,12 @@ action_size = env.action_space.n
 max_episodes = 5000
 max_steps = 500
 discount_factor = 0.99
-policy_learning_rate = 0.001
-value_net_learning_rate = 0.01
-learning_rate_decay = 0.999
+policy_learning_rate = 0.0001
+value_net_learning_rate = 0.001
+learning_rate_decay = 0.995
+solved_th = -100
 
-render = True
+render = False
 
 
 def decay_learning_rate(learning_rate, episode):
@@ -146,6 +147,7 @@ with tf.Session() as sess:
                 V_s_prime = sess.run(state_value_network.value_estimate, {state_value_network.state: next_state})
 
             else:
+                reward = 100
                 V_s_prime = 0
 
             td_target = reward + discount_factor * V_s_prime
@@ -172,9 +174,11 @@ with tf.Session() as sess:
                 if episode > 98:
                     # Check if solved
                     average_rewards = np.mean(episode_rewards[(episode - 99):episode + 1])
+                else:
+                    average_rewards = np.mean(episode_rewards[0:episode + 1])
                 print("Episode {} Reward: {} Average over 100 episodes: {}".format(episode, episode_rewards[episode],
                                                                                    round(average_rewards, 2)))
-                if average_rewards > 475:
+                if average_rewards > solved_th:
                     print(' Solved at episode: ' + str(episode))
                     solved = True
                 break
