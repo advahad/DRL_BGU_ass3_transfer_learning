@@ -6,7 +6,7 @@ import summary_util
 import bins_container
 
 env = gym.make('MountainCarContinuous-v0')
-# env._max_episode_steps = None
+env._max_episode_steps = None
 
 np.random.seed(1)
 
@@ -23,12 +23,12 @@ action_size = 10
 max_state_size = 6
 
 max_episodes = 5000
-max_steps = 500
+max_steps = 7000
 discount_factor = 0.99
 policy_learning_rate = 0.0001
 value_net_learning_rate = 0.001
 learning_rate_decay = 0.995
-solved_th = -100
+solved_th = 90
 
 render = False
 
@@ -165,6 +165,7 @@ with tf.Session() as sess:
     average_rewards = 0.0
 
     for episode in range(max_episodes):
+        print("Starting episode: %d" % episode)
         state = env.reset()
         state = state.reshape([1, state_size])
         policy_losses = []
@@ -183,7 +184,7 @@ with tf.Session() as sess:
                 env.render()
 
             action_one_hot = np.zeros(action_size)
-            action_one_hot[action] = get_action_discrete(action)
+            action_one_hot[action] = 1#get_action_discrete(action)
 
             # update cont_actionstatistics
             episode_rewards[episode] += reward
@@ -196,7 +197,6 @@ with tf.Session() as sess:
                                      {state_value_network.state: process_state(next_state)})
 
             else:
-                reward = 100
                 V_s_prime = 0
 
             td_target = reward + discount_factor * V_s_prime
