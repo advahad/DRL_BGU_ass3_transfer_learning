@@ -68,6 +68,8 @@ def get_action_cont(idx):
     action_value = action_bins.discrete_to_cont(idx)
     return [action_value]
 
+def get_action_idx(action):
+    return action_bins.get_bin_index(action)
 
 # car_mapping = create_mapping(car_position_discrete)
 
@@ -177,14 +179,16 @@ with tf.Session() as sess:
             actions_distribution = sess.run(policy.actions_distribution, {policy.state: process_state(state)})
             action = np.random.choice(np.arange(len(actions_distribution)), p=actions_distribution)
             cont_action = get_action_cont(action)
-            next_state, reward, done, _ = env.step(cont_action)
+            summaried_action = cont_action + state[0][1]
+            next_state, reward, done, _ = env.step(summaried_action)
             next_state = next_state.reshape([1, state_size])
 
             if render:
                 env.render()
 
             action_one_hot = np.zeros(action_size)
-            action_one_hot[action] = 1#get_action_discrete(action)
+
+            action_one_hot[get_action_idx(summaried_action)] = 1#get_action_discrete(action)
 
             # update cont_actionstatistics
             episode_rewards[episode] += reward
