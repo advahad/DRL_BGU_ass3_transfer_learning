@@ -8,6 +8,7 @@ start = time.time()
 
 env = gym.make('CartPole-v1')
 env._max_episode_steps = None
+solved_th = 475
 
 np.random.seed(1)
 
@@ -21,7 +22,7 @@ LOGS_PATH = './logs/actor-critic/CartPole-v1'
 state_size = 4
 action_size = env.action_space.n
 max_state_size = 6
-# max_action_size = 10
+max_action_size = 10
 
 max_episodes = 5000
 max_steps = 10000000
@@ -108,7 +109,7 @@ class PolicyNetwork:
 # Initialize the policy network
 tf.reset_default_graph()
 
-policy = PolicyNetwork(max_state_size, action_size)
+policy = PolicyNetwork(max_state_size, max_action_size)
 state_value_network = StateValueNetwork(max_state_size, 1, value_net_learning_rate)
 
 
@@ -132,14 +133,16 @@ with tf.Session() as sess:
         for step in range(max_steps):
             # choose action from policy network given initial state
             actions_distribution = sess.run(policy.actions_distribution, {policy.state: state})
-            action = np.random.choice(np.arange(len(actions_distribution)), p=actions_distribution)
+            actions_distribution = actions_distribution[:action_size]
+            actions_distribution /= actions_distribution.sum()
+            action = np.random.choice(np.arange(len(actions_distribution))[:action_size], p=actions_distribution)
             next_state, reward, done, _ = env.step(action)
             next_state = padding_util.pad_and_reshape(next_state, max_state_size)
 
             if render:
                 env.render()
 
-            action_one_hot = np.zeros(action_size)
+            action_one_hot = np.zeros(max_action_size)
             action_one_hot[action] = 1
 
             # update statistics
@@ -180,7 +183,7 @@ with tf.Session() as sess:
                     average_rewards = np.mean(episode_rewards[(episode - 99):episode + 1])
                 print("Episode {} Reward: {} Average over 100 episodes: {}".format(episode, episode_rewards[episode],
                                                                                    round(average_rewards, 2)))
-                if average_rewards > 475:
+                if average_rewards > solved_th:
                     print(' Solved at episode: ' + str(episode))
                     solved = True
                 break
