@@ -3,6 +3,9 @@ import numpy as np
 import tensorflow as tf
 import summary_util
 import bins_container
+import time
+
+start = time.time()
 
 # env setup
 env = gym.make('MountainCarContinuous-v0')
@@ -12,7 +15,7 @@ np.random.seed(1)
 
 # CONFIGURATIONS
 V_NET_LAYER_SIZE = 20
-POLICY_NET_LAYER_SIZE = 20 # may be changed to 12
+POLICY_NET_LAYER_SIZE = 20  # may be changed to 12
 
 LOGS_PATH = './logs/actor-critic/MountainCarContinuous-v0'
 
@@ -25,15 +28,14 @@ max_state_size = 6
 max_episodes = 5000
 max_steps = 10000000
 discount_factor = 0.99
-policy_learning_rate = 0.0001
+policy_learning_rate = 0.001
 value_net_learning_rate = 0.001
-learning_rate_decay = 0.995 # may be 0.999
+learning_rate_decay = 0.99  # may be 0.999
 solved_th = 80
 
-bin_values = [-0.7,-0.6,-0.5,-0.4,-0.2,0,0.2,0.4,0.6,0.7]
+bin_values = [-0.7, -0.6, -0.5, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.7]
 
 render = False
-
 
 # discretizing states
 car_position_range = [env.observation_space.low[0], env.observation_space.high[0]]
@@ -56,9 +58,12 @@ def get_idx(action_cont):
             return i
     return len(bin_values) - 1
 
-def pad_state(state):
-    pad = np.zeros(max_state_size - len(state))
-    np.concatenate((state, pad), axis=0)
+
+def pad_and_reshape_state(state):
+    pad_to_add = np.zeros(max_state_size - len(state))
+    concatenated = np.concatenate((state, pad_to_add), axis=0)
+    concatenated = concatenated.reshape([1, max_state_size])
+    return concatenated
 
 
 def decay_learning_rate(learning_rate, episode):
@@ -136,10 +141,11 @@ class PolicyNetwork:
 # Initialize the policy network
 tf.reset_default_graph()
 
-policy = PolicyNetwork(state_size, action_size)
-state_value_network = StateValueNetwork(state_size, 1, value_net_learning_rate)
+policy = PolicyNetwork(max_state_size, action_size)
+state_value_network = StateValueNetwork(max_state_size, 1, value_net_learning_rate)
 
 summary_writer = summary_util.init(LOGS_PATH)
+saver = tf.train.Saver()
 
 # Start training the agent with REINFORCE algorithm
 with tf.Session() as sess:
@@ -153,7 +159,8 @@ with tf.Session() as sess:
         state = env.reset()
         # padding
         # state = np.append(state, [0] * (state_size - len(state)))
-        state = state.reshape([1, state_size])
+        state = pad_and_reshape_state(state)
+        # state = state.reshape([1, max_state_size])
         policy_losses = []
         value_losses = []
 
@@ -162,21 +169,23 @@ with tf.Session() as sess:
             # choose action from policy network given initial state
             actions_distribution = sess.run(policy.actions_distribution, {policy.state: state})
             action = np.random.choice(bin_values, 1, p=actions_distribution)
-            #cont_action = get_action_cont(action)
-            #summaried_action = cont_action + state[0][1]
+            # cont_action = get_action_cont(action)
+            # summaried_action = cont_action + state[0][1]
             summaried_action = action + state[0][1]
             next_state, reward, done, _ = env.step(summaried_action)
 
-            #pad
-            #next_state = np.append(next_state, [0] * (state_size - len(next_state)))
-            next_state = next_state.reshape([1, state_size])
+            # pad
+            # next_state = np.append(next_state, [0] * (state_size - len(next_state)))
+            next_state = pad_and_reshape_state(next_state)
+            # next_state = next_state.reshape([1, max_state_size])
 
             if render:
                 env.render()
 
             action_one_hot = np.zeros(action_size)
 
-            action_one_hot[get_idx(summaried_action)] = 1#get_action_discrete(action)
+            action_one_hot[1] = 1  # get_action_discrete(action)
+            # action_one_hot[get_idx(summaried_action)] = 1#get_action_discrete(action)
 
             # update cont_actionstatistics
             episode_rewards[episode] += reward
@@ -238,4 +247,9 @@ with tf.Session() as sess:
         if solved:
             break
 
+    saver.save(sess, './models/MountainCar/MountainCarContinuous-v0-model')  # , global_step=1000
     summary_writer.close()
+
+end = time.time()
+total_time = end - start
+print("total running time %f" % total_time)
