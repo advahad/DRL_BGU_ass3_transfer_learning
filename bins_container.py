@@ -34,6 +34,12 @@ class DiscreteBins:
             print("get default bin")
             return self.bins_list[0].mean
 
+    def get_bins_mean_as_list(self):
+        mean_list = []
+        for bin in self.bins_list:
+            mean_list.append(bin.mean)
+        return mean_list
+
     @staticmethod
     def create_bins(discrete_arr):
         bins = []
