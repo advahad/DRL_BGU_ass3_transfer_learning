@@ -3,6 +3,11 @@ import tensorflow as tf
 
 
 def init(logs_path):
+    """
+    Returns file writer, should be the first call
+    :param logs_path:
+    :return:
+    """
     tf.summary.merge_all()
     writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
     return writer
@@ -22,3 +27,7 @@ def create_summary(value, name):
 def write_summaries(writer, episode, summaries):
     for summary in summaries:
         writer.add_summary(summary, episode)
+
+
+def close_writer(writer):
+    writer.close()
