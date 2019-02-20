@@ -1,9 +1,9 @@
 import gym
 import numpy as np
 import tensorflow as tf
-import summary_util
-import bins_container
+from utils import summary_util, bins_container, padding_util
 import time
+
 
 start = time.time()
 
@@ -57,13 +57,6 @@ def get_idx(action_cont):
         if action_cont < bin_values[i]:
             return i
     return len(bin_values) - 1
-
-
-def pad_and_reshape_state(state):
-    pad_to_add = np.zeros(max_state_size - len(state))
-    concatenated = np.concatenate((state, pad_to_add), axis=0)
-    concatenated = concatenated.reshape([1, max_state_size])
-    return concatenated
 
 
 def decay_learning_rate(learning_rate, episode):
@@ -159,7 +152,7 @@ with tf.Session() as sess:
         state = env.reset()
         # padding
         # state = np.append(state, [0] * (state_size - len(state)))
-        state = pad_and_reshape_state(state)
+        state = padding_util.pad_and_reshape(state, max_state_size)
         # state = state.reshape([1, max_state_size])
         policy_losses = []
         value_losses = []
@@ -176,7 +169,7 @@ with tf.Session() as sess:
 
             # pad
             # next_state = np.append(next_state, [0] * (state_size - len(next_state)))
-            next_state = pad_and_reshape_state(next_state)
+            next_state = padding_util.pad_and_reshape(next_state, max_state_size)
             # next_state = next_state.reshape([1, max_state_size])
 
             if render:

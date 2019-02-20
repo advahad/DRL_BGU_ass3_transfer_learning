@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 import tensorflow as tf
-import summary_util
+from utils import summary_util, padding_util
 import time
 
 start = time.time()
@@ -21,6 +21,7 @@ LOGS_PATH = './logs/actor-critic/CartPole-v1'
 state_size = 4
 action_size = env.action_space.n
 max_state_size = 6
+# max_action_size = 10
 
 max_episodes = 5000
 max_steps = 10000000
@@ -34,13 +35,6 @@ render = False
 
 def decay_learning_rate(learning_rate, episode):
     return max(0.0001, learning_rate * learning_rate_decay ** episode)
-
-
-def pad_and_reshape_state(state):
-    pad_to_add = np.zeros(max_state_size - len(state))
-    concatenated = np.concatenate((state, pad_to_add), axis=0)
-    concatenated = concatenated.reshape([1, max_state_size])
-    return concatenated
 
 
 class StateValueNetwork:
@@ -130,7 +124,7 @@ with tf.Session() as sess:
 
     for episode in range(max_episodes):
         state = env.reset()
-        state = pad_and_reshape_state(state)
+        state = padding_util.pad_and_reshape(state, max_state_size)
         policy_losses = []
         value_losses = []
 
@@ -140,7 +134,7 @@ with tf.Session() as sess:
             actions_distribution = sess.run(policy.actions_distribution, {policy.state: state})
             action = np.random.choice(np.arange(len(actions_distribution)), p=actions_distribution)
             next_state, reward, done, _ = env.step(action)
-            next_state = pad_and_reshape_state(next_state)
+            next_state = padding_util.pad_and_reshape(next_state, max_state_size)
 
             if render:
                 env.render()
