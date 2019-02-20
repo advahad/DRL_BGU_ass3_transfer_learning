@@ -181,6 +181,7 @@ with tf.Session() as sess:
             cont_action = get_action_cont(action)
             summaried_action = cont_action + state[0][1]
             next_state, reward, done, _ = env.step(summaried_action)
+            next_state = np.append(next_state, [0] * (state_size - len(next_state)))
             next_state = next_state.reshape([1, state_size])
 
             if render:
