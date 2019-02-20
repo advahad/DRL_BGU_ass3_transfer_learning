@@ -2,6 +2,9 @@ import gym
 import numpy as np
 import tensorflow as tf
 import summary_util
+import time
+
+start = time.time()
 
 env = gym.make('CartPole-v1')
 env._max_episode_steps = None
@@ -12,11 +15,12 @@ np.random.seed(1)
 V_NET_LAYER_SIZE = 20
 POLICY_NET_LAYER_SIZE = 20
 
-LOGS_PATH = './logs/actor-critic'
+LOGS_PATH = './logs/actor-critic/CartPole-v1'
 
 # Define hyper parameters
 state_size = 4
 action_size = env.action_space.n
+max_state_size = 6
 
 max_episodes = 5000
 max_steps = 10000000
@@ -30,6 +34,13 @@ render = False
 
 def decay_learning_rate(learning_rate, episode):
     return max(0.0001, learning_rate * learning_rate_decay ** episode)
+
+
+def pad_and_reshape_state(state):
+    pad_to_add = np.zeros(max_state_size - len(state))
+    concatenated = np.concatenate((state, pad_to_add), axis=0)
+    concatenated = concatenated.reshape([1, max_state_size])
+    return concatenated
 
 
 class StateValueNetwork:
@@ -103,11 +114,12 @@ class PolicyNetwork:
 # Initialize the policy network
 tf.reset_default_graph()
 
-policy = PolicyNetwork(state_size, action_size)
-state_value_network = StateValueNetwork(state_size, 1, value_net_learning_rate)
+policy = PolicyNetwork(max_state_size, action_size)
+state_value_network = StateValueNetwork(max_state_size, 1, value_net_learning_rate)
 
 
 summary_writer = summary_util.init(LOGS_PATH)
+saver = tf.train.Saver()
 
 # Start training the agent with REINFORCE algorithm
 with tf.Session() as sess:
@@ -118,7 +130,7 @@ with tf.Session() as sess:
 
     for episode in range(max_episodes):
         state = env.reset()
-        state = state.reshape([1, state_size])
+        state = pad_and_reshape_state(state)
         policy_losses = []
         value_losses = []
 
@@ -128,7 +140,7 @@ with tf.Session() as sess:
             actions_distribution = sess.run(policy.actions_distribution, {policy.state: state})
             action = np.random.choice(np.arange(len(actions_distribution)), p=actions_distribution)
             next_state, reward, done, _ = env.step(action)
-            next_state = next_state.reshape([1, state_size])
+            next_state = pad_and_reshape_state(next_state)
 
             if render:
                 env.render()
@@ -194,3 +206,8 @@ with tf.Session() as sess:
             break
 
     summary_writer.close()
+    saver.save(sess, './models/cartpole/CartPole-v1-model')  # , global_step=1000
+
+end = time.time()
+total_time = end - start
+print("total running time %f" % total_time)
