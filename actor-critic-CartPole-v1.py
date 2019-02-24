@@ -17,6 +17,7 @@ V_NET_LAYER_SIZE = 20
 POLICY_NET_LAYER_SIZE = 20
 
 LOGS_PATH = './logs/actor-critic/CartPole-v1'
+MODEL_PATH = './models/cartpole/CartPole-v1-model'
 
 # Define hyper parameters
 state_size = 4
@@ -28,7 +29,7 @@ max_episodes = 5000
 max_steps = 10000000
 discount_factor = 0.99
 policy_learning_rate = 0.001
-value_net_learning_rate = 0.01
+value_net_learning_rate = 0.001
 learning_rate_decay = 0.999
 
 render = False
@@ -133,9 +134,11 @@ with tf.Session() as sess:
         for step in range(max_steps):
             # choose action from policy network given initial state
             actions_distribution = sess.run(policy.actions_distribution, {policy.state: state})
+            # choose only existing actions
             actions_distribution = actions_distribution[:action_size]
             actions_distribution /= actions_distribution.sum()
             action = np.random.choice(np.arange(len(actions_distribution))[:action_size], p=actions_distribution)
+
             next_state, reward, done, _ = env.step(action)
             next_state = padding_util.pad_and_reshape(next_state, max_state_size)
 
@@ -203,7 +206,7 @@ with tf.Session() as sess:
             break
 
     summary_writer.close()
-    saver.save(sess, './models/cartpole/CartPole-v1-model')  # , global_step=1000
+    saver.save(sess, MODEL_PATH)  # , global_step=1000
 
 end = time.time()
 total_time = end - start
