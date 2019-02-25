@@ -76,7 +76,6 @@ def train_models(policy, state_value_network, network_params, algorithm_params, 
                     V_s_prime = sess.run(state_value_network.value_estimate, {state_value_network.state: next_state})
 
                 else:
-                    reward = 100
                     V_s_prime = 0
 
                 td_target = reward + algorithm_params.discount_factor * V_s_prime
