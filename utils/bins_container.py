@@ -1,5 +1,3 @@
-import numpy as np
-
 
 class Bin:
     def __init__(self, low, high, mean):
