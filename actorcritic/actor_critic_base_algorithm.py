@@ -2,7 +2,7 @@ import gym
 import numpy as np
 import tensorflow as tf
 
-from networks.actor_critic_training import train_modell, train_mountain_car_model, train_mc, NetworkParams, \
+from networks.actor_critic_training import train_model, train_mountain_car, NetworkParams, \
     AlgorithmParams
 from networks.critic_network import StateValueNetwork
 from networks.policy_network import PolicyNetwork
@@ -21,7 +21,8 @@ def get_network_params(cnf):
 def get_algo_params(cnf, env):
     algo_params = AlgorithmParams(env, cnf.env['render'], cnf.algo['max_episodes'], cnf.algo['max_steps'],
                                   cnf.algo['discount_factor'], cnf.network['policy_learning_rate'],
-                                  cnf.network['learning_rate_decay'], cnf.env['solved_th'])
+                                  cnf.network['value_net_learning_rate'], cnf.network['learning_rate_decay'],
+                                  cnf.env['solved_th'])
     return algo_params
 
 
@@ -53,14 +54,15 @@ def run_actor_critic(cnf, is_mountain_car):
                                    cnf.network['max_action_size'])
     algo_params = AlgorithmParams(env, cnf.env['render'], cnf.algo['max_episodes'], cnf.algo['max_steps'],
                                   cnf.algo['discount_factor'], cnf.network['policy_learning_rate'],
+                                  cnf.network['value_net_learning_rate'],
                                   cnf.network['learning_rate_decay'], cnf.env['solved_th'])
 
     # start training
     if not is_mountain_car:
-        train_modell(policy, state_value_network, network_params, algo_params,
-                     cnf.paths['logs'] + '/baseline', cnf.paths['model'], save_model=True)
+        train_model(policy, state_value_network, network_params, algo_params,
+                    cnf.paths['logs'] + '/baseline', cnf.paths['model'], save_model=True)
     else:
-        train_mc(policy, state_value_network, network_params, algo_params, bin_values,
-                 cnf.paths['logs'] + '/baseline', cnf.paths['model'], save_model=True)
+        train_mountain_car(policy, state_value_network, network_params, algo_params, bin_values,
+                           cnf.paths['logs'] + '/baseline', cnf.paths['model'], save_model=True)
     # train_models(policy, state_value_network, network_params, algo_params,
     #              cnf.paths['logs'] + '/baseline', cnf.paths['model'], save_model=True)
