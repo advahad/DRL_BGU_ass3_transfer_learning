@@ -1,7 +1,7 @@
 import tensorflow as tf
 from networks.policy_network import PolicyNetwork
 from networks.critic_network import StateValueNetwork
-from networks.actor_critic_training import train_model, train_mountain_car
+from networks.training import train_model, train_mountain_car
 
 bin_values = [-0.7, -0.6, -0.5, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.7]
 
@@ -50,4 +50,4 @@ def transfer_and_train(src_domain_model_path, src_domain_ckp_path, net_params, a
         if not is_mountain_car:
             train_model(policy, state_value_network, net_params, algo_params, logs_path)
         else:
-            train_mountain_car(policy, state_value_network, net_params, algo_params, bin_values, logs_path)
+            train_model(policy, state_value_network, net_params, algo_params, logs_path, True, bin_values)

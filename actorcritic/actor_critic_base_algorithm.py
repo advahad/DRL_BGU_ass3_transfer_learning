@@ -2,12 +2,9 @@ import gym
 import numpy as np
 import tensorflow as tf
 
-from networks.actor_critic_training import train_model, train_mountain_car, NetworkParams, \
-    AlgorithmParams
 from networks.critic_network import StateValueNetwork
 from networks.policy_network import PolicyNetwork
-
-bin_values = [-0.7, -0.6, -0.5, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.7]
+from networks.training import train_model, NetworkParams, AlgorithmParams
 
 np.random.seed(1)
 
@@ -60,9 +57,7 @@ def run_actor_critic(cnf, is_mountain_car):
     # start training
     if not is_mountain_car:
         train_model(policy, state_value_network, network_params, algo_params,
-                    cnf.paths['logs'] + '/baseline', cnf.paths['model'], save_model=True)
+                    cnf.paths['logs'] + '/baseline', False, [], cnf.paths['model'], save_model=True)
     else:
-        train_mountain_car(policy, state_value_network, network_params, algo_params, bin_values,
-                           cnf.paths['logs'] + '/baseline', cnf.paths['model'], save_model=True)
-    # train_models(policy, state_value_network, network_params, algo_params,
-    #              cnf.paths['logs'] + '/baseline', cnf.paths['model'], save_model=True)
+        train_model(policy, state_value_network, network_params, algo_params,
+                    cnf.paths['logs'] + '/baseline', True, cnf.bin_values, cnf.paths['model'], save_model=True)

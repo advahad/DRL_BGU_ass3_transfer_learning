@@ -12,7 +12,9 @@ algo = {'max_episodes': 5000,
         'discount_factor': 0.99}
 
 network = {'policy_learning_rate': 0.001,
-           'value_net_learning_rate':  0.001,
+           'value_net_learning_rate': 0.001,
            'learning_rate_decay': 0.99,
            'max_action_size': 10,
            'max_state_size': 6}
+
+bin_values = [-0.7, -0.6, -0.5, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.7]
