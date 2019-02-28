@@ -23,14 +23,16 @@ def get_algo_params(cnf, env):
     return algo_params
 
 
-def generate_policy_net(cnf):
-    policy = PolicyNetwork(cnf.network['max_state_size'], cnf.network['max_action_size'])
-    return policy
-
-
-def generate_critic_net(cnf):
-    state_value_network = StateValueNetwork(cnf.network['max_state_size'], 1, cnf.network['value_net_learning_rate'])
-    return state_value_network
+#
+#
+# def generate_policy_net(cnf):
+#     policy = PolicyNetwork(cnf.network['max_state_size'], cnf.network['max_action_size'])
+#     return policy
+#
+#
+# def generate_critic_net(cnf):
+#     state_value_network = StateValueNetwork(cnf.network['max_state_size'], 1, cnf.network['value_net_learning_rate'])
+#     return state_value_network
 
 
 def run_actor_critic(cnf, is_mountain_car):

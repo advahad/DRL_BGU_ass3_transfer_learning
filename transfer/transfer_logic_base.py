@@ -5,6 +5,35 @@ from networks.training import train_model, train_mountain_car
 
 bin_values = [-0.7, -0.6, -0.5, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.7]
 
+def copy_weights_policy(sess, src_graph, policy):
+    p_W1 = src_graph.get_tensor_by_name("policy_network/W1:0")
+    p_b1 = src_graph.get_tensor_by_name("policy_network/b1:0")
+
+    p_W2 = src_graph.get_tensor_by_name("policy_network/W2:0")
+    p_b2 = src_graph.get_tensor_by_name("policy_network/b2:0")
+
+    p_W3 = src_graph.get_tensor_by_name("policy_network/W3:0")
+    p_b3 = src_graph.get_tensor_by_name("policy_network/b3:0")
+
+    sess.run([tf.assign(policy.W1, p_W1), tf.assign(policy.b1, p_b1),
+              tf.assign(policy.W2, p_W2), tf.assign(policy.b2, p_b2),
+              tf.assign(policy.W3, p_W3), tf.assign(policy.b3, p_b3)])
+    return policy
+
+def copy_weights_critic(sess, src_graph, state_value_network):
+    # value network
+    p_W1 = src_graph.get_tensor_by_name("state_value_network/W1:0")
+    p_b1 = src_graph.get_tensor_by_name("state_value_network/b1:0")
+
+    p_W2 = src_graph.get_tensor_by_name("state_value_network/W2:0")
+    p_b2 = src_graph.get_tensor_by_name("state_value_network/b2:0")
+
+    p_W3 = src_graph.get_tensor_by_name("state_value_network/W3:0")
+    p_b3 = src_graph.get_tensor_by_name("state_value_network/b3:0")
+
+    sess.run([tf.assign(state_value_network.W1, p_W1), tf.assign(state_value_network.b1, p_b1),
+              tf.assign(state_value_network.W2, p_W2), tf.assign(state_value_network.b2, p_b2),
+              tf.assign(state_value_network.W3, p_W3), tf.assign(state_value_network.b3, p_b3)])
 
 def transfer_and_train(src_domain_model_path, src_domain_ckp_path, net_params, algo_params, cnf, is_mountain_car=False):
     logs_path = cnf.paths['logs'] + '/transfer'
