@@ -645,4 +645,4 @@ Episode 643 Reward: 302.0 Average over 100 episodes: 331.04
 Episode 644 Reward: 458.0 Average over 100 episodes: 333.76
 Episode 645 Reward: 20735.0 Average over 100 episodes: 538.02
  Solved at episode: 645
-total running time 166.371158
+total running time 245.700570
