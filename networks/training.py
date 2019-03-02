@@ -58,11 +58,11 @@ flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
 
 
 def train_model(policy, state_value_network, network_params, algorithm_params, logs_path, is_mountain_car=False,
-                bin_values=[], model_path=None, save_model=False):
+                bin_values=[], model_path=None, save_model=False, mode="baseline"):
     saver = tf.train.Saver()
     summary_writer = summary_util.init(logs_path)
     start = time.time()
-    result_file_name = "..\\results\\baseline\\" + algorithm_params.env.unwrapped.spec.id + '.txt'
+    result_file_name = "..\\results\\" + mode + "\\" + algorithm_params.env.unwrapped.spec.id + ".txt"
     the_file = open(result_file_name, 'w')
 
     with tf.Session() as sess:
