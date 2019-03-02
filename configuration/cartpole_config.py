@@ -2,7 +2,8 @@ env = {'name': 'CartPole-v1',
        'render': False,
        'solved_th': 475,
        'action_size': 2,
-       'state_size': 4}
+       'state_size': 4,
+       'max_episode_steps': None}
 
 paths = {'logs': '../logs/cartpole',
          'model': '../models/cartpole/cartpole-model'}

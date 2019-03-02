@@ -16,19 +16,12 @@ env._max_episode_steps = None
 col1_domain_model_path = cnf_acrobot.paths['model'] + '.meta'
 col1_domain_ckp_path = cnf_acrobot.paths['checkpoint']
 col1_gym_name = cnf_acrobot.env['name']
-# col1_policy_net_scope = 'policy_network_' + col1_gym_name
-# col1_critic_net_scope = 'critic_network_' + col1_gym_name
+
 col1_policy_net_scope = 'policy_network'
 col1_critic_net_scope = 'critic_network'
 
-# src 2
-col2_domain_model_path = cnf_mountain_car.paths['model'] + '.meta'
-col2_domain_ckp_path = cnf_mountain_car.paths['checkpoint']
-col2_gym_name = cnf_mountain_car.env['name']
-# col2_policy_net_scope = 'policy_network_' + col2_gym_name
-# col2_critic_net_scope = 'critic_network_' + col2_gym_name
-col2_policy_net_scope = 'policy_network'
-col2_critic_net_scope = 'critic_network'
+
+
 
 # algo_params = get_algo_params(cnf, env)
 # net_params = get_network_params(cnf)
@@ -99,7 +92,7 @@ class ProgNetPolicy:
                 self.A12 = tf.nn.relu(self.Z12)
                 self.Z22 = tf.add(tf.add(tf.matmul(tf.stop_gradient(self.A11), self.u11_22), tf.matmul(self.A12, self.W22)), self.b22)
                 self.A22 = tf.nn.relu(self.Z22)
-                self.output2 = tf.add(tf.add(tf.matmul(tf.stop_gradient(self.A21), self.u21_32), tf.matmul(self.A22, self.W32), self.b32))
+                self.output2 = tf.add(tf.add(tf.matmul(tf.stop_gradient(self.A21), self.u21_32), tf.matmul(self.A22, self.W32)), self.b32)
 
                 # Softmax probability distribution over actions
                 self.actions_distribution2 = tf.squeeze(tf.nn.softmax(self.output2), name='actions_distribution2')
@@ -188,9 +181,9 @@ class ProgNetValue:
                 self.W21 = tf.get_variable("W21", [LAYER_SIZE, LAYER_SIZE],
                                            initializer=tf.contrib.layers.xavier_initializer(seed=0))
                 self.b21 = tf.get_variable("b21", [LAYER_SIZE], initializer=tf.zeros_initializer())
-                self.W31 = tf.get_variable("W31", [LAYER_SIZE, self.action_size],
+                self.W31 = tf.get_variable("W31", [LAYER_SIZE, 1],
                                            initializer=tf.contrib.layers.xavier_initializer(seed=0))
-                self.b31 = tf.get_variable("b31", [self.action_size], initializer=tf.zeros_initializer())
+                self.b31 = tf.get_variable("b31", [1], initializer=tf.zeros_initializer())
 
                 self.Z11 = tf.add(tf.matmul(self.state, self.W11), self.b11)
                 self.A11 = tf.nn.relu(self.Z11)
@@ -199,7 +192,7 @@ class ProgNetValue:
                 self.output1 = tf.add(tf.matmul(self.A21, self.W31), self.b31)
 
                 self.value_estimate1 = tf.squeeze(self.output1, name='value_estimate1')
-                self.loss1 = tf.squared_difference(self.value_estimate, self.td_target, name='loss1')
+                self.loss1 = tf.squared_difference(self.value_estimate1, self.td_target, name='loss1')
                 self.optimizer1 = tf.train.AdamOptimizer(learning_rate=self.learning_rate, name='optimizer1').minimize(
                     self.loss1)
 
@@ -211,23 +204,23 @@ class ProgNetValue:
                 self.W22 = tf.get_variable("W22", [LAYER_SIZE, LAYER_SIZE],
                                            initializer=tf.contrib.layers.xavier_initializer(seed=0))
                 self.b22 = tf.get_variable("b22", [LAYER_SIZE], initializer=tf.zeros_initializer())
-                self.W32 = tf.get_variable("W32", [LAYER_SIZE, self.action_size],
+                self.W32 = tf.get_variable("W32", [LAYER_SIZE, 1],
                                            initializer=tf.contrib.layers.xavier_initializer(seed=0))
-                self.b32 = tf.get_variable("b32", [self.action_size], initializer=tf.zeros_initializer())
+                self.b32 = tf.get_variable("b32", [1], initializer=tf.zeros_initializer())
 
                 self.u11_22 = tf.get_variable("u11_22", [LAYER_SIZE, LAYER_SIZE],
                                               initializer=tf.contrib.layers.xavier_initializer(seed=0))
-                self.u21_32 = tf.get_variable("u21_32", [LAYER_SIZE, self.action_size],
+                self.u21_32 = tf.get_variable("u21_32", [LAYER_SIZE, 1],
                                               initializer=tf.contrib.layers.xavier_initializer(seed=0))
 
                 self.Z12 = tf.add(tf.matmul(self.state, self.W12), self.b12)
                 self.A12 = tf.nn.relu(self.Z12)
                 self.Z22 = tf.add(tf.add(tf.matmul(tf.stop_gradient(self.A11), self.u11_22), tf.matmul(self.A12, self.W22)), self.b22)
                 self.A22 = tf.nn.relu(self.Z22)
-                self.output2 = tf.add(tf.add(tf.matmul(tf.stop_gradient(self.A21), self.u21_32), tf.matmul(self.A22, self.W32), self.b32))
+                self.output2 = tf.add(tf.add(tf.matmul(tf.stop_gradient(self.A21), self.u21_32), tf.matmul(self.A22, self.W32)), self.b32)
 
                 self.value_estimate2 = tf.squeeze(self.output2, name='value_estimate2')
-                self.loss2 = tf.squared_difference(self.value_estimate, self.td_target, name='loss2')
+                self.loss2 = tf.squared_difference(self.value_estimate2, self.td_target, name='loss2')
                 self.optimizer2 = tf.train.AdamOptimizer(learning_rate=self.learning_rate, name='optimizer2').minimize(
                     self.loss2)
 
@@ -239,17 +232,17 @@ class ProgNetValue:
                 self.W23 = tf.get_variable("W23", [LAYER_SIZE, LAYER_SIZE],
                                            initializer=tf.contrib.layers.xavier_initializer(seed=0))
                 self.b23 = tf.get_variable("b23", [LAYER_SIZE], initializer=tf.zeros_initializer())
-                self.W33 = tf.get_variable("W33", [LAYER_SIZE, self.action_size],
+                self.W33 = tf.get_variable("W33", [LAYER_SIZE, 1],
                                            initializer=tf.contrib.layers.xavier_initializer(seed=0))
-                self.b33 = tf.get_variable("b33", [self.action_size], initializer=tf.zeros_initializer())
+                self.b33 = tf.get_variable("b33", [1], initializer=tf.zeros_initializer())
 
                 self.u11_23 = tf.get_variable("u11_23", [LAYER_SIZE, LAYER_SIZE],
                                               initializer=tf.contrib.layers.xavier_initializer(seed=0))
                 self.u12_23 = tf.get_variable("u21_23", [LAYER_SIZE, LAYER_SIZE],
                                               initializer=tf.contrib.layers.xavier_initializer(seed=0))
-                self.u21_33 = tf.get_variable("u21_33", [LAYER_SIZE, self.action_size],
+                self.u21_33 = tf.get_variable("u21_33", [LAYER_SIZE, 1],
                                               initializer=tf.contrib.layers.xavier_initializer(seed=0))
-                self.u22_33 = tf.get_variable("u22_33", [LAYER_SIZE, self.action_size],
+                self.u22_33 = tf.get_variable("u22_33", [LAYER_SIZE, 1],
                                               initializer=tf.contrib.layers.xavier_initializer(seed=0))
 
                 self.Z13 = tf.add(tf.matmul(self.state, self.W13), self.b13)
@@ -265,30 +258,30 @@ class ProgNetValue:
                                   tf.matmul(self.A23, self.W33)), self.b33)
 
                 self.value_estimate3 = tf.squeeze(self.output3, name='value_estimate3')
-                self.loss3 = tf.squared_difference(self.value_estimate, self.td_target, name='loss3')
+                self.loss3 = tf.squared_difference(self.value_estimate3, self.td_target, name='loss3')
                 self.optimizer3 = tf.train.AdamOptimizer(learning_rate=self.learning_rate, name='optimizer3').minimize(
                     self.loss3)
 
-        self.actions_distribution = self.actions_distribution1
         self.loss = self.loss1
         self.optimizer = self.optimizer1
+        self.value_estimate = self.value_estimate1
 
 
     def set_network_number(self, net_number):
         self.current_network_number = net_number
 
         if self.current_network_number == 1:
-            self.actions_distribution = self.actions_distribution1
             self.loss = self.loss1
             self.optimizer = self.optimizer1
+            self.value_estimate = self.value_estimate1
         elif self.current_network_number == 2:
-            self.actions_distribution = self.actions_distribution2
             self.loss = self.loss2
             self.optimizer = self.optimizer2
+            self.value_estimate = self.value_estimate2
         else:
-            self.actions_distribution = self.actions_distribution3
             self.loss = self.loss3
             self.optimizer = self.optimizer3
+            self.value_estimate = self.value_estimate3
 
 
 

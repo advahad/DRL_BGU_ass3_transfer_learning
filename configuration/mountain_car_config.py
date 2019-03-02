@@ -2,7 +2,8 @@ env = {'name': 'MountainCarContinuous-v0',
        'render': False,
        'solved_th': 80,
        'action_size': 10,
-       'state_size': 6}
+       'state_size': 6,
+       'max_episode_steps': 7000}
 
 paths = {'logs': '../logs/mountain_car',
          'model': '../models/mountain_car/mountain_car-model'}
